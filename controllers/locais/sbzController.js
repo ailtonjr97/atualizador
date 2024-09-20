@@ -44,7 +44,7 @@ async function atualizarSBZ(req, res) {
 
         // Criar uma matriz de promessas para verificar e atualizar/inserir registros
         const promises = notas.data.objects.map(async element => {
-            const { BZ_FILIAL, BZ_COD, B5_CEME, S_T_A_M_P_, R_E_C_N_O_, R_E_C_D_E_L_ } = element;
+            const { BZ_FILIAL, BZ_COD, BZ_IPI, BZ_PICM, S_T_A_M_P_, R_E_C_N_O_, R_E_C_D_E_L_ } = element;
 
             // Verificar se o registro existe
             const result = await sql.query`SELECT * FROM SBZ010 WHERE BZ_FILIAL = ${BZ_FILIAL} AND BZ_COD = ${BZ_COD}`;
@@ -85,10 +85,12 @@ async function atualizarSBZ(req, res) {
         // Esperar a conclusão de todas as promessas
         await Promise.all(promises);
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SBZ010', ${getCurrentSQLServerDateTime()}, 200)`
+        res.sendStatus(200);
     } catch (error) {
         await connectToDatabase();
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SBZ010', ${getCurrentSQLServerDateTime()}, ${error.response?.status || 500})`
         console.log(error);
+        res.sendStatus(200);
     }
 }
 
@@ -127,19 +129,14 @@ async function atualizarSBZMassa(req, res) {
         }
 
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SBZ010M', ${getCurrentSQLServerDateTime()}, 200)`
+        res.sendStatus(200);
     } catch (error) {
         await connectToDatabase();
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SBZ010M', ${getCurrentSQLServerDateTime()}, ${error.response?.status || 500})`
         console.log(error);
+        res.sendStatus(500);
     }
 }
-
-async function verificarHorario() {
-    await atualizarSBZ();
-}
-
-// Executar a verificação a cada 10 minutos
-setInterval(verificarHorario, 600000);
 
 module.exports = { 
     atualizarSBZ,
