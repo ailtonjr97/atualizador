@@ -128,7 +128,6 @@ async function atualizarSc5(req, res) {
             INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) 
             VALUES ('SC5010', ${getCurrentSQLServerDateTime()}, 200)
         `;
-        res.sendStatus(200);
     } catch (error) {
         await connectToDatabase();
         await sql.query`
@@ -136,7 +135,6 @@ async function atualizarSc5(req, res) {
             VALUES ('SC5010', ${getCurrentSQLServerDateTime()}, ${error.response?.status || 500}, ${error.response?.statusText || '500'})
         `;
         console.log(error);
-        res.sendStatus(200);
     }
 }
 
@@ -219,7 +217,6 @@ async function atualizarSc5Massa(req, res) {
             INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) 
             VALUES ('SC5010M', ${getCurrentSQLServerDateTime()}, 200)
         `;
-        res.sendStatus(200);
     } catch (error) {
         await connectToDatabase();
         await sql.query`
@@ -230,25 +227,13 @@ async function atualizarSc5Massa(req, res) {
     }
 }
 
-let refreshed = true;
 
 async function verificarHorario() {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-
-    // Verificar se o horário do update em massa
-    if (hours === 0 && minutes <= 55 && refreshed) {
-        await atualizarSc5Massa();
-        refreshed = false;
-    } else if (hours !== 0 || minutes > 55) {
-        refreshed = true;
-        await atualizarSc5();
-    }
+    await atualizarSc5();
 }
 
-// Executar a verificação a cada 30 minutos
-setInterval(verificarHorario, 1800000);
+// Executar a verificação a cada 10 minutos
+setInterval(verificarHorario, 600000);
 
 module.exports = { 
     atualizarSc5,

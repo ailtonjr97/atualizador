@@ -52,6 +52,6 @@ app.use("/consultas", cors(corsOptions), authenticationMiddlewareBasic, consulta
 app.use("/local", cors(corsOptions), authenticationMiddlewareApi,local);
 app.use("/graficos", cors(corsOptions), authenticationMiddleware, graficos);
 
-app.listen(5000, function () {
-    console.log("Node.js working in port 5000");
+app.listen(6000, function () {
+    console.log("Node.js working in port 6000");
 });

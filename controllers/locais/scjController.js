@@ -175,12 +175,10 @@ async function atualizarScj(req, res) {
         // Esperar a conclusão de todas as promessas
         await Promise.all(promises);
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SCJ010', ${getCurrentSQLServerDateTime()}, 200)`
-        res.sendStatus(200);
     } catch (error) {
         console.log(error)
         await connectToDatabase();
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SCJ010', ${getCurrentSQLServerDateTime()}, ${error.response?.status || 500})`
-        res.sendStatus(200);
     }
 }
 
@@ -304,35 +302,20 @@ async function atualizarScjMassa(req, res) {
         }
 
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SCJ010M', ${getCurrentSQLServerDateTime()}, 200)`;
-        res.sendStatus(200);
     } catch (error) {
         await connectToDatabase();
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SCJ010M', ${getCurrentSQLServerDateTime()}, ${error.response?.status || 500})`;
         console.log(error);
-        res.sendStatus(500);
     }
 }
 
-
-let refreshed = true;
 
 async function verificarHorario() {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-
-    // Verificar se o horário do update em massa
-    if (hours === 0 && minutes <= 55 && refreshed) {
-        await atualizarScjMassa();
-        refreshed = false;
-    } else if (hours !== 0 || minutes > 55) {
-        refreshed = true;
-        await atualizarScj();
-    }
+    await atualizarScj();
 }
 
-// Executar a verificação a cada 2 minutos
-setInterval(verificarHorario, 1800000);
+// Executar a verificação a cada 10 minutos
+setInterval(verificarHorario, 600000);
 
 module.exports = { 
     atualizarScj,

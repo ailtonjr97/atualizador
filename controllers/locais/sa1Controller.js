@@ -63,12 +63,10 @@ async function atualizarSa1(req, res) {
         // Esperar a conclusão de todas as promessas
         await Promise.all(promises);
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SA1010', ${getCurrentSQLServerDateTime()}, 200)`
-        res.sendStatus(200);
     } catch (error) {
         console.log(error)
         await connectToDatabase();
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SA1010', ${getCurrentSQLServerDateTime()}, ${error.response?.status || 500})`
-        res.sendStatus(200);
     }
 }
 
@@ -100,34 +98,19 @@ async function atualizarSa1Massa(req, res) {
         // Esperar a conclusão de todas as promessas
         await Promise.all(promises);
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SA1010M', ${getCurrentSQLServerDateTime()}, 200)`
-        res.sendStatus(200);
     } catch (error) {
         await connectToDatabase();
         await sql.query`INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) VALUES ('SA1010M', ${getCurrentSQLServerDateTime()}, ${error.response?.status || 500})`
         console.log(error)
-        res.sendStatus(500);
     }
 }
-
-let refreshed = true;
 
 async function verificarHorario() {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-
-    // Verificar se o horário do update em massa
-    if (hours === 3 && refreshed) {
-        await atualizarSa1Massa();
-        refreshed = false;
-    } else if (hours !== 3 || minutes > 30) {
-        refreshed = true;
-        await atualizarSa1();
-    }
+    await atualizarSa1();
 }
 
-// Executar a verificação a cada 2 minutos
-setInterval(verificarHorario, 1800000);
+// Executar a verificação a cada 10 minutos
+setInterval(verificarHorario, 600000);
 
 module.exports = { 
     atualizarSa1,
