@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { sql, connectToDatabase } = require('../../services/dbConfig.js');
+const { sendEmail } = require('../../services/emailService.js');
 
 function getCurrentDateString() {
     const now = new Date();
@@ -132,6 +133,17 @@ async function atualizarSc5(req, res) {
             INSERT INTO LOG_TABELAS (TABELA, HORARIO, STATUS) 
             VALUES ('SC5010', ${getCurrentSQLServerDateTime()}, 200)
         `;
+
+        const pedidoAtual = await sql.query`select NUM from PEDS`;
+        let pedidoAtualNum = Number(pedidoAtual.recordset[0].NUM);
+        const pedido = await sql.query`select TOP 1 C5_NUM from SC5010 where C5_VEND1 = '000037' ORDER BY C5_NUM DESC`
+        const numPed = Number(pedido.recordset[0].C5_NUM);
+
+        if(pedidoAtualNum != numPed){
+            await sendEmail('informatica04@fibracem.com', 'Novo pedido', `Criado novo pedido de numero ${numPed}`);
+            await sql.query`update PEDS set NUM = ${numPed}`;
+        }
+
     } catch (error) {
         await connectToDatabase();
         await sql.query`
